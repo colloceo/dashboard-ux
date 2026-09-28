@@ -1,34 +1,28 @@
-# Verification and shipping
+# Verification
 
-## Screenshot with mocked data (no real accounts needed)
+## Mocked screenshots (no real accounts needed)
 
-- **Tooling:** puppeteer-core with the local Chrome (`C:/Program Files/Google/Chrome/Application/chrome.exe`) and request interception. Answer every API call with fixtures; unmatched calls get a 404. Seed the auth token into session storage with `evaluateOnNewDocument`, and set `localStorage.theme`.
-- **Trade:**
-  - dev server `npx next dev -p 3100`;
-  - API `https://api.trade.more.co.ke`;
-  - buyer tokens in `trade_portal_buyer_tokens`, seller tokens in `trade_portal_seller_tokens`.
-- **Admin:** `adminmock.js`-style harness against vite on port 5180.
-- **Git Bash:** run with `MSYS_NO_PATHCONV=1`, or `/buyer/...` paths get mangled. Write harness scripts to the scratchpad instead of inline `node -e` with backticks.
-- **Matrix:** light and dark × 1366 and 390. Log `scrollWidth` vs `innerWidth` for each shot.
-- **Fixtures** must cover the unhappy states: empty lists, fee not set, branded order, declined payment, long names, and large amounts (7+ digits).
-- **Warm-up:** the first shot after a cold compile is often blank, so take a throwaway shot first.
-- **Clicks:** clicking a collapsible header that's already open closes it. Check which card opens by default.
+- **Tooling:** use a headless browser with request interception, such as Puppeteer or Playwright.
+- **Mock every API call:** answer each call to the app's API base with fixtures, and send a 404 for anything unmatched, so gaps show up.
+- **Before the page loads:** seed the auth session the app expects (storage key or cookie) and the theme preference.
+- **Matrix:** light and dark × about 1366px and 390px. For each shot, log `scrollWidth` against `innerWidth`.
+- **Fixtures for the unhappy paths:**
+  - empty lists;
+  - fees not set yet;
+  - items with extras;
+  - declined or failed steps;
+  - long names;
+  - large amounts (7+ digits).
+- **Warm-up:** the first shot after a cold dev compile is often blank, so take a throwaway shot first.
+- **Collapsible sections:** clicking a header that's already open closes it. Check which section opens by default.
+- **Windows Git Bash:** set `MSYS_NO_PATHCONV=1` so route arguments like `/orders` aren't turned into file paths. Write harness scripts to files instead of inline `node -e` with backticks.
 
-## Checks before shipping
+## Before shipping
 
-- `npx tsc --noEmit` (trade), `npx tsc -b` and `npx vite build` (admin), `yarn lint:gpu` (more.co.ke).
-- Lint the changed files.
+- Run the project's typecheck, its lint on the changed files, and its build if it's quick.
 - Money breakdowns sum exactly.
-- Counts match between sidebar, bottom nav, overview and list tabs.
-- Stop your own dev servers afterwards. On this machine, a leftover `next dev` (about 700 MB) makes `git push` or `git fetch` fail with "Out of memory".
-
-## Ship rules per repo
-
-| Repo | Rule |
-|---|---|
-| Trade frontend `E:/more/trade` | Commit, push `ui-landing-integration:test`, deploy with `docker compose build app` then `up -d app` |
-| Admin `E:/more/trade-portal_frontend_demo` | Push to trade-admin `test2` only (rebase, never force). Never deploy |
-| Backend `E:/more/trade-portal` | The teammate's. Push or deploy only when the user explicitly asks |
-| more.co.ke `C:/more/more` | Never commit or push. Leave the changes for the user |
-
-No AI co-author trailer on any commit.
+- Counts match across the nav, bottom nav, overview and tabs.
+- Both themes are readable, and every illustration has its dark version.
+- **Stop the dev servers you started.** Leftover dev servers can starve the machine of memory and make `git push` fail.
+- **Follow the profile's ship rules exactly.** If there aren't any, ask before you commit, push or deploy.
+- **Commit messages:** follow the project's conventions and the user's instructions for commit trailers.

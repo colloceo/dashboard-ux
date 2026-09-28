@@ -1,93 +1,92 @@
 ---
 name: dashboard-ux
-description: House UI/UX rules for role dashboards (buyer, seller, admin) as built across trade.more.co.ke (buyer/seller + admin) and more.co.ke (buyer/seller). Use whenever designing, redesigning, reviewing or building a dashboard screen, overview, sidebar/bottom nav, list + detail page, filter row, order/RFQ flow page, empty/error/success state, money or fee display, or when adding/replacing dashboard illustrations (including writing prompts to generate them in light and dark). Also use when the user shares a dashboard screenshot and asks how to improve, compact or rearrange it.
+description: UI/UX rules and a method for role-based dashboards (customer, vendor or seller, admin, ops) in any project, stack or brand colour. Use whenever designing, redesigning, reviewing or building a dashboard, overview, sidebar or phone bottom nav, list + detail page, filter row, multi-step flow page (orders, requests, applications, onboarding), empty/error/success state, money, fee or payment display, or when adding or replacing illustrations (including writing prompts to generate them in light and dark). Also use when the user shares a dashboard screenshot and asks how to improve, compact or rearrange it.
 ---
 
 # Dashboard UX
 
-These are the rules we settled on while building the trade buyer/seller dashboards, the trade admin, and the more.co.ke buyer/seller dashboards. Apply them together with `ux-design` / `ux-psychology`. This skill is the house style; those are the general method.
+This is a portable playbook for dashboards people use to get work done, distilled from shipping buyer, seller and admin dashboards. It works with any framework and any brand, because it discovers the project's own design system first and adapts to it. Pair it with general UX skills (such as `ux-design` and `ux-psychology`) if they're installed.
 
-The one-line test for any dashboard screen: **can the person see, within two seconds, what needs them, what it will cost them, and what to press next?**
+**The two-second test for any dashboard screen:** can the person see what needs them, what it will cost or earn them, and what to press next?
+
+## Step 0: learn the project (once per project)
+
+Look for `.claude/dashboard-ux.profile.md` in the repo. If it exists, read it and follow it. If it doesn't, discover these and write one (template in `references/profile-template.md`):
+
+- **Stack and styling:** framework, CSS approach (Tailwind, CSS modules, CSS-in-JS), how the theme toggles (a `data-theme` or class on the root element, or `prefers-color-scheme`).
+- **Tokens:** brand or primary colour, text and muted text, surfaces (page, card, panel), borders, and status colours (info, success, warning, error). Use tokens and never hard-code colours. If there are no tokens, propose a small set before building.
+- **Kit:** existing card, button, badge, tabs, drawer, modal, popover, skeleton, toast, empty-state and list-row components. Reuse them before creating anything.
+- **Roles:** who uses which dashboard, and what each role's main job is.
+- **Rules modules:** where "what needs this person" and "what's the next step" are computed. If that logic is scattered, centralise it (see `references/patterns.md`).
+- **House rules:** the repo's CLAUDE.md, lint rules, performance or GPU constraints, and how the repo ships (commit, push or deploy rules). Record them in the profile. Never guess a deploy.
 
 ## Workflow
 
-1. **Inspect first.** Open the page, its shared components, and the data it gets. Screenshots from the user are evidence; read them before claiming anything.
-2. **Name the user's job on this screen.** Examples: "pay the deposit", "quote before the window closes", "review a held message". Put that job first on the page.
-3. **Reuse the shared pieces** (see `references/patterns.md`) instead of new one-offs.
-4. **Design the phone layout on purpose.** It is not a squeezed desktop (see `references/layout-responsive.md`).
-5. **Illustrations:** use the house style, give every piece a dark version, and never put a background behind one (see `references/illustrations.md`).
-6. **Verify.** Take mocked screenshots in light and dark, at desktop and 390px, and confirm no sideways scroll. Then follow the repo's ship rule (see `references/verification.md`).
+1. **Inspect** the page, its components and its data. Treat the user's screenshots as evidence and read them before claiming anything.
+2. **Name the person's job on this screen**, such as "pay the deposit" or "answer before the deadline", and put it first on the page.
+3. **Reuse the project's kit and tokens.**
+4. **Design the phone layout on purpose** (`references/layout-responsive.md`).
+5. **Illustrations:** follow `references/illustrations.md`. Every piece gets a light and dark version, the palette comes from the brand colour, and nothing sits behind the art.
+6. **Verify** with mocked screenshots in light and dark, at desktop width and 390px, and confirm there's no sideways scroll (`references/verification.md`). Then follow the profile's ship rules.
 
-## Non-negotiables (from user feedback, don't relitigate)
+## Principles (defaults; the project's profile can override them)
 
-- **Visual restraint**
-  - No orange outline, bar or left-edge stripe on the active sidebar item. Show active with a soft tint and weight only.
-  - No chunky scrollbars. Use the thin-scroll styling.
-  - No background, plate, tile, tint or well behind illustrations. The art sits straight on the card.
-- **Lists and filters**
-  - The filter defaults to **All**, on every list: orders, RFQs, KYC, KYB, inspections.
-  - One search box per screen. If the filter bar has search, the page header doesn't.
-- **Compactness**
-  - Headers and top cards are compact. If a summary card takes more than about a third of the first screen, shrink it.
-  - Context lives where it's used. Example: chat participants go in the conversation header, not in a card at the bottom.
-- **Copy**
-  - Use plain words. Explain what happens and who acts next, not internal status names.
-  - No em dashes in UI copy.
-  - Buyer and seller UI never mentions AI moderation. Say "the platform" instead.
-- **Money**
-  - Money shown to a payer always says what's included, and every breakdown adds up to the cent (see Money).
-- **Destructive actions**
-  - A risky delete explains what uses the item.
-  - Offer "turn off" as the safe alternative to delete.
+- **Restraint:**
+  - Show the active nav item with a soft tint of the brand colour and a heavier weight. Don't use a coloured bar, stripe or outline.
+  - Keep scrollbars thin.
+  - Put no background, plate, tile or tint behind illustrations. The art sits directly on the card.
+- **Lists:** default filters to **All**, and show a count on each tab. Use one search box per screen; if the filter bar has search, the header doesn't.
+- **Compactness:** a summary or top card shouldn't take more than about a third of the first screen. Put context where it's used, for example a conversation's participants in the chat header.
+- **Copy:**
+  - Use plain words that say what's happening and who acts next. Don't show internal status names.
+  - Keep dashes and jargon out of UI copy.
+  - Don't expose internal machinery to end users, such as automated review or moderation. Refer to it as "the platform" or the product name.
+- **Consistency:** one set of rules drives the nav counts, overview, list rows and detail page, so their numbers never disagree.
+- **Safety:** a destructive action explains what depends on the item and offers a reversible alternative ("turn off", "archive"). Deletion always asks for confirmation.
+- **Money:** never show a figure without saying what's in it (see Money).
 
 ## Page anatomy
 
 Top to bottom:
 
-1. **Page header.** A breadcrumb, then the title and one line saying what this page is for. No second search, and no action buttons duplicated from the sidebar.
-2. **Your next move.** One primary action, derived from the shared next-step rules. The same rules drive the sidebar counts, the list rows and the detail page, so they never disagree.
-3. **Needs your attention** first, **waiting on others** second. Each row has an illustration or icon, a title, one line on what's happening, and a due or countdown line.
-4. **Work in progress:** deals, orders or listings, with progress shown as labelled steps.
-5. **Stats:** clickable tiles, each with a second line that says what to do ("2 need a quote").
-6. **Recent activity:** at most 5 items, and a link to see all.
-
-**Setup checklist:** show it only while setup is incomplete. On the seller overview it replaces the sidebar setup card, so it never appears twice.
+1. **Header.** A breadcrumb, the title, and one line on what the page is for. No duplicate search, and no action buttons the nav already has.
+2. **Your next move.** One primary action taken from the rules module, with a deadline or countdown if there is one.
+3. **Needs you**, then **waiting on others**. Each row has art or an icon, a title, one line on what's happening, and a due line.
+4. **In progress.** Active items with labelled step progress. On phones this becomes a snap-scrolling strip.
+5. **Stats.** Clickable tiles, each with a second line that says what to do ("2 need a reply").
+6. **Recent activity.** At most 5 items, plus a "see all" link.
+7. **Setup checklist.** Show it only while setup is incomplete, and never twice on the same screen (the nav card and the page card).
 
 ## List + detail
 
-- **Desktop:** a master list (about 40%) plus a preview panel. The preview is a summary; the full logic stays behind "View full …".
-- **Phone:** the list only. Tapping opens the full page.
+- **Desktop:** a list of about 40% width, next to a preview panel. The preview is a summary; the full logic stays behind "View full …".
+- **Phone:** the list only. Tapping a row opens the full page.
 - **Rows:**
-  - title;
-  - one mono meta line: `#ID · money with caption · qty · party · updated`;
+  - a title;
+  - one meta line: `#ID · amount + caption · quantity · counterpart · updated`;
   - a status line in plain words;
-  - a step illustration on the right;
-  - an unread count if any.
-- **Filter tabs show counts**, e.g. `All (4)`, `Awaiting payment (1)`. Default to All. On phones the filter bar scrolls sideways instead of wrapping into a wall.
-- **Detail pages** use collapsible cards. Open the card that needs action; the rest stay closed and show a summary on the right of their header ("Fully signed", "All payments confirmed").
+  - a small illustration for the step;
+  - an unread count.
+- **Detail pages:** collapsible sections. Open the one that needs action; each closed section shows a one-word summary in its header ("Signed", "All paid").
 
 ## Money
 
-- **Headline:** the amount the viewer actually pays or receives, followed by a caption.
-  - "incl. platform fee" once the fee is known.
-  - "+ platform fee" before the fee is set.
-- **Breakdown:** write out rows that sum to the total: Goods (qty × unit), Branding (if any), Platform fee (with %), then Your total.
-- **Payments:** show each one as "30% of goods KES X + fee KES Y". The last payment takes the rounding remainder, so the payments equal the total exactly.
-- **Rounding:** work in cents.
-- **Role difference:** the fee belongs to the buyer's view. The seller sees their goods share only.
+- **Headline:** the amount this viewer pays or receives, plus a caption. Use "incl. fees" once the fees are known, and "+ fees" before they're set.
+- **Breakdown:** rows that add up to the total: base (quantity × unit), extras, each fee (with its %), then **Your total**.
+- **Instalments:** show each one as "30% of goods X + fee Y" when fees aren't split by percentage. Work in integer minor units (cents). The last instalment takes the rounding remainder, so instalments always equal the total.
+- **Roles:** each role sees its own side. The payer sees fees; the payee sees what they receive.
 
-## Guides and teaching
+## States and guidance
 
-- **Inline, just in time.** Put one tip for the current step next to the step, not a manual.
-- **Explain once, then get out of the way.** Use dismissible intros (the "what's new" modal style) and a `Popover` for the "What does signing mean?" type of question.
-- **Every state is designed:** loading (skeletons), empty (illustration + one sentence + one action), error (what failed, plus retry) and success (a short celebratory state, then the next step).
-- **Waiting states name who is acting:** "Waiting for admin to assign an inspector."
+- **Designed states:** skeletons for loading, an empty state (art, one sentence, one action), an error (what failed, plus retry), and a success moment followed by the next step.
+- **Teach just in time:** one tip next to the current step, a popover for "what does this mean?", and dismissible "what's new" intros. No manuals.
+- **Waiting states name who is acting:** "Waiting for the seller to confirm shipping."
 
 ## References
 
-Load only what the task needs:
-
-- `references/illustrations.md`: house style, colours, the light/dark prompt template, file naming, fitting, wiring (`StepIllustration`, `SellerIllustration`, `ThemedArt`).
-- `references/layout-responsive.md`: sidebar, phone bottom nav with a "More" sheet, breakpoints, sticky bars, 390px rules, the GPU safety rules for more.co.ke.
-- `references/patterns.md`: the shared components and helpers per repo, and the attention/next-step rules.
-- `references/verification.md`: mocked screenshot harnesses, checks, and each repo's ship rule.
+- `references/profile-template.md`: the per-project profile to create in Step 0.
+- `references/illustrations.md`: style, palette derivation from any brand colour, light and dark prompt templates, naming, fitting, wiring, clean-up.
+- `references/layout-responsive.md`: sidebar, phone bottom nav with a "More" sheet, breakpoints, sticky bars, the 390px rule, motion, mobile GPU safety.
+- `references/patterns.md`: the building blocks to find or create, the rules modules, the money helper algorithm, copy patterns.
+- `references/verification.md`: a mocked-API screenshot harness, the test matrix, checks before shipping.
+- `scripts/fit-svg.js`: centre and fit delivered SVG art. `scripts/contact-sheet.js`: review every piece in light and dark.

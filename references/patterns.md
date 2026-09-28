@@ -1,55 +1,63 @@
-# Shared pieces and rules
+# Building blocks and rules
 
-Always check that these still exist (grep) before recommending them.
+Find the project's version of each piece first; create one only if it's missing. Record the paths in the profile.
 
-## Trade buyer/seller (`E:/more/trade`, Next 14, Tailwind, react-query)
+## Building blocks
 
-- **Tokens.** CSS vars only, never raw colours:
-  - text and surfaces: `--text`, `--text-muted`, `--card-bg`, `--card-border`, `--panel-bg`, `--glass`, `--page-bg`;
-  - alerts: `--alert-{info,success,warning,error}-{bg,text,border}`;
-  - brand: `--primary #f65016`.
-- **UI kit** (`components/ui`): `GlassCard`, `SectionLabel`, `Badge`, `Button`, `Tabs`, `Drawer`, `Modal`, `Popover`, `ConfirmDialog`, `Skeleton`, `EmptyState`, `Pagination`, `PageHeader`, `Breadcrumbs`, `MetaRow`, `StatusDot`, `Toast`.
-- **Dashboard shell:** `DashboardSidebar` (items with count/meta/status, `action`, `setup`, `bottomItems`), `BottomNavShell` (badge, dot, onClick), `NavMoreSheet`, `SellerShell`/`BuyerShell`.
-- **Attention rules:** `components/dashboard/navState.ts` (`useBuyerNavState`, `useSellerNavState`, `buyerRfqItem`, `sellerRfqItem`). Sidebar, bottom nav and Overview all read from this, so counts always match. Add new "needs you" logic here, never inline.
-- **Next-step engine:** `lib/nextStep.ts` (`orderNextStep`, `stageIsDue`, `TRIGGER_DUE_LABEL`, `actorWaitingLabel`) plus `lib/orderStepContent.ts` (`stepVisual`, `stepTip`, `nextUp`, `SUCCESS`, `orderListSummary`). Every "what's happening / what's next" string comes from here.
-- **Lists:** `RfqListRow` (title, meta, summary, image, unread, selected), `RfqListEmpty`, `RfqPreviewStatus`; `OrderPreviewPanel`/`RfqPreviewPanel` (buyer and seller variants).
-- **Order page:** `CollapsibleCard`, `OrderProgressTracker`, `OrderProgressPanel`, `StepIllustration`, `AgreementCard`, `PaymentScheduleCard`, `OrderDetailsRows`.
-- **Money:** `components/trade/OrderCharges.tsx`:
-  - `orderCharges()` gives goods, branding, fee and total in cents;
-  - `totalCaption()`;
-  - `OrderChargesBreakdown`;
-  - `paymentShares()` gives per-payment goods and fee, with the remainder on the last payment.
+| Block | What it must do |
+|---|---|
+| Card | Consistent padding and radius; a `bare` mode for use inside another card |
+| Section label | Small uppercase heading with an optional status on the right |
+| Badge | Status colour from tokens, plus a text label (never colour alone) |
+| Tabs / filter bar | Counts per tab; defaults to All; optional single search; scrolls sideways on phones |
+| List row | Title, one meta line, a plain status line, small art, an unread count, selected state |
+| Preview panel | Summary of the selected row plus a "View full …" button |
+| Collapsible section | Title, one-word summary when closed, attention style when it needs action |
+| Step tracker | Labelled steps with done, current and upcoming states; short labels on phones |
+| Next-step card | Art, "step N of M", what's happening, one action, one tip, what comes next |
+| Empty state | Art, one sentence, one action |
+| Drawer / modal | Drawer for view and edit; modal only for short confirmations |
+| Popover | Answers "what does this mean?" in place |
+| Skeleton / toast | Loading placeholders; a brief confirmation after an action |
+| Money breakdown | Rows that add up, then a total (see below) |
 
-  Format with `orderMoney(currency, n)`.
-- **Chat:** `MessagingPanel`. Participants go in the header. The sender's own pending, blocked and adjusted messages have their own states. Never say "AI".
+## Rules modules (single source of truth)
 
-## Trade admin (`E:/more/trade-portal_frontend_demo`, Vite, React 19, Tailwind 4)
+Put these in plain functions, not in components:
 
-- **Shared components:** `FilterBar` (search, tabs and a `className` prop; the default tab is All), `PhaseSteps`, `Illustration`, and `Drawer` in `components/ui.tsx` (body `thin-scroll p-4 sm:p-6`).
-- **Layout:** `AdminLayout` with `MobileNav` bottom nav on phones.
-- **Detail pages** (RFQ, business, inspection):
-  - a compact top card with the actions on the right;
-  - side panels for context;
-  - drawers for view and edit.
-- **Moderation:** `MessageModerationCard` (compact mode, held-reason banner) and `QuoteReview`.
-- **Setup screens** (templates, forms, categories, schedules, banners):
-  - one list plus an editor drawer;
-  - a shared `FormBuilder` (`FormEditor`, `FormPreview`, `FormKit`);
-  - "turn off" next to delete;
-  - a delete explains what still uses the item.
+- **`needsYou(items, role)`** returns the counts and items for the nav, bottom nav, overview and list tabs. If any of them computes its own count, they will disagree.
+- **`nextStep(item, role)`** returns the actor, the action, the plain-language line, the due date and the illustration key. Every "what's happening / what's next" string comes from here.
+- **`stepContent(phase, role)`** returns the tip, "coming next" and the success copy.
 
-## more.co.ke (`C:/more/more`, Next 14.0.0)
+When a backend adds a state, update these modules once, and every surface follows.
 
-- **Illustrations:** `SellerIllustration` (slot registry, `dash()` helper, dark version derived from the filename), `ThemedArt`, and `SellerEmptyState` (also used as `BuyerEmptyState`).
-- **Theme:** `data-theme` plus Tailwind `dark:`.
-- **Repo rules:** GPU rules in CLAUDE.md. Never commit or push here; the user does.
+## Money helper
+
+Work in integer minor units:
+
+```
+charges(total, qty, unitPrice, fee?, feePct?):
+  base    = qty × unitPrice              (only if it's below total; the rest is extras such as branding)
+  extras  = total − base
+  fee     = fee ?? null                  (null means "not set yet" → caption "+ fees")
+  payable = total + (fee ?? 0)
+
+instalments(baseTotal, fee, stages[{pct, feeShare}]):
+  for every stage except the last: goods = round(baseTotal × pct / 100); feePart = stage.feeShare
+  the last stage takes baseTotal − Σgoods and fee − ΣfeePart
+  → the instalments sum exactly to baseTotal + fee
+```
+
+Show the payer the goods, extras, fee and total. Show the payee their share only.
 
 ## Copy patterns
 
 | Situation | Pattern | Example |
 |---|---|---|
-| Waiting | who + what | "Waiting for admin to set the payment terms." |
-| Needs you | verb first | "Pay the deposit", "Review 2 quotes" |
+| Waiting | who + what | "Waiting for the seller to confirm shipping." |
+| Needs you | verb first | "Pay the deposit", "Review 2 offers" |
 | Due | relative | "closes in 2 days", "due before shipment" |
-| Empty | what + why + one action | "No orders yet. Orders appear once a negotiation is concluded." + button |
+| Empty | what + why + one action | "No orders yet. Orders appear once an offer is accepted." [Browse] |
 | Error | what failed + retry | "Couldn't load your orders." [Try again] |
+| Success | what happened + next | "Payment sent. We'll confirm it within a day." |
+| Destructive | consequence + safer option | "3 products use this category. Turn it off instead?" |
